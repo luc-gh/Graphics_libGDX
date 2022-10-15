@@ -3,35 +3,43 @@ package com.libgdx.graficos;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;  //instância da classe graphics para as funções de ShapeRenderer
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;  //biblioteca interna de libGDX que possui funções úteis de matemática
 
 /*
-* O contexto OpenGL é útil para trabalhar com os desenhos de tela píxel a píxel, mas para uma maior eficiência, em
-* alguns casos é mais fácil trabalhar com desenhos em alto nível: retângulos e círculos já predefinidos.
-* A função ShapeRenderer permite essa abordagem.
+* O código anterior usa o método shapeRenderer.begin() para instruir ao libGDX (e à OpenGL) sobre a categoria de desenho à ser
+* construído (no caso, foi um círculo preenchido [filled]) e usa o método shapeRenderer.end() para garantir que o desenho
+* produzido foi renderizado corretamente. Porém, para vários desenhos, a eficiência do código pode ser baixa:
 */
 
 public class Graphics extends ApplicationAdapter {  //Main class (classe principal)
-	ShapeRenderer shapeRenderer;  //instância da função para chamadas
+	ShapeRenderer shapeRenderer;
 
 	@Override
-	public void create(){  //Função (da classe principal) responsável pelas definições e ajustes padrões da aplicação
-		shapeRenderer = new ShapeRenderer();  //construtor da função nesta classe (para a aplicação)
+	public void create(){
+		shapeRenderer = new ShapeRenderer();
 	}
 
 	@Override
-	public void render(){  //Função (da classe principal) responsável pela renderização da tela
+	public void render(){
 		Gdx.gl.glClearColor(.25f,.25f,.25f,1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);  //inicialização de desenho (shape) com tipo Filled (preenchido)
-		shapeRenderer.setColor(0,1,0,1);   //definição da cor do desenho, que será verde
-		shapeRenderer.circle(200,100,75);  //definição do formato do desenho, que será um círculo
-		shapeRenderer.end();  //finalização de construção do desenho
+		for(int i = 0; i < 10; i++) {  //loop (10 vezes): para criar 10 círculos de cores e posições diferentes
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			shapeRenderer.setColor(MathUtils.random(), MathUtils.random(), MathUtils.random(), 1);  //gera cor aleatória
+			//Gera largura e altura aleatórias:
+			shapeRenderer.circle(MathUtils.random(Gdx.graphics.getWidth()), MathUtils.random(Gdx.graphics.getHeight()), 70);
+			shapeRenderer.end();
+		}
+
+		System.out.println(Gdx.graphics.getFramesPerSecond());  //Imprime a taxa de frames por segundo
 	}
 
+	//OBS.: caso seu pc tenha um desempenho maior, você pode gerar muito mais círculos (o teste original criava 10k por frame)
+
 	@Override
-	public void dispose(){  //Função responsável pela desconstrução (ou fechamento) dos elementos renderizados na tela
-		shapeRenderer.dispose();  //desconstrução dos desenhos presentes em tela
+	public void dispose(){
+		shapeRenderer.dispose();
 	}
 }
