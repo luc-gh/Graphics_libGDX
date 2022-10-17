@@ -8,7 +8,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 /*
-* A classe Camera também oferece funcionalidades mais avançadas de manipulação de tela, com zoom e rotação:
+* O código anterior trabalha com o conceito de 'coordenadas por píxeis', trabalhando com unidades e direções baseadas neles.
+* Entretanto, neste código, o conceito usado será o de "coordenadas globais": se define um ponto de origem com base em
+* qualquer referência da tela, como, por exemplo, o ponto de início de um jogador; além disso, as unidades passam a ser
+* baseadas quaisquer bases, como metros, pés, píxeis ou até não possuírem base definida.
+* Este código cria uma câmera cuja janela de exibição tem dimensões 200x100x0, como ponto de origem (0,0,0), e cria retângulos
+* de dimensões 100x50 em unidades globais, relativas ao ponto de origem:
 */
 
 public class Graphics extends ApplicationAdapter {  //Main class (classe principal)
@@ -16,18 +21,15 @@ public class Graphics extends ApplicationAdapter {  //Main class (classe princip
 	OrthographicCamera camera;
 
     //variáveis
-	float infEsqX = 0, infEsqY = 0, largRet, altRet, velocidade = 100f, vel, zVel, rVel;
-    float zoomVel = 1f, rotacaoVel = 20f;
+	float largRet = 100f, altRet = 50f, vel, zVel, rVel, velocidade = 100f, zoomVel = 1f, rotacaoVel = 20f;
 
 	@Override
 	public void create(){
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());  //os parâmetros são as dimensões
-		camera.position.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f,0);  //posição inicial
+		camera = new OrthographicCamera(200, 100);  //parâmetros: viewportWidth, viewportHeight
+		camera.position.set(0,0,0);  //parâmetros: posições x, y, z
 		camera.update();
 
 		shapeRenderer = new ShapeRenderer();
-		largRet = Gdx.graphics.getWidth() / 2f;
-		altRet = Gdx.graphics.getHeight() / 2f;
 	}
 
 	@Override
@@ -55,10 +57,10 @@ public class Graphics extends ApplicationAdapter {  //Main class (classe princip
 
         //Ampliação ou redução de câmera (zoom):
         if(Gdx.input.isKeyPressed(Input.Keys.NUMPAD_SUBTRACT)){  // MENOS (-) do teclado numérico
-            camera.zoom -= zVel;  //afastamento  (-zoom)
+            camera.zoom += zVel;  //afastamento  (-zoom)
         }
         else if(Gdx.input.isKeyPressed(Input.Keys.NUMPAD_ADD)){   // MAIS (+) do teclado numérico
-            camera.zoom += zVel;  //aproximação  (+zoom)
+            camera.zoom -= zVel;  //aproximação  (+zoom)
         }
 
         //Rotação de câmera:
@@ -71,26 +73,27 @@ public class Graphics extends ApplicationAdapter {  //Main class (classe princip
 
         /*
         OBS.:
-        O movimento de câmera é afetado pelos efeitos de zoom e rotação, isto é, ao girar a câmera, por exemplo, gira-se
-        também os eixos x, y e z, que são as referências da câmera, e com isso, ao mover os objetos para 'cima', eles
-        irão movimentar-se em direção ao topo do eixo y, e como este está deslocado, o movimento parecerá estranho.
+        Com o movimento sendo proporcionado tendo como base coordenadas globais, a rotação de câmera perde a referência
+        dos eixos, deformando os retângulos ao girá-los. Dependendo da aplicação, manter o sistema anterior ou aplicar
+        este pode fazer a diferença.
         */
 
 		Gdx.gl.glClearColor(.25f,.25f,.25f,1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		camera.update();
-		shapeRenderer.setProjectionMatrix(camera.combined);  //o argumento passado é a câmera
+		shapeRenderer.setProjectionMatrix(camera.combined);
 
+		//Agora as referências mudam:
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		shapeRenderer.setColor(0,0,1,1);
-		shapeRenderer.rect(infEsqX, infEsqY, largRet, altRet);  //retângulo criado na posição inferior esquerda (0,0)
+		shapeRenderer.rect(-largRet, -altRet, largRet, altRet*1);  //(x,y,largura,altura)
 		shapeRenderer.setColor(1,0,0,1);
-		shapeRenderer.rect(infEsqX + largRet, infEsqY, largRet, altRet);  //criado na posição superior esquerda
+		shapeRenderer.rect(0, -altRet, largRet, altRet);
 		shapeRenderer.setColor(0,1,0,1);
-		shapeRenderer.rect(infEsqX + largRet, infEsqY + altRet, largRet, altRet);  //posição superior direita
+		shapeRenderer.rect(0, 0, largRet, altRet);
 		shapeRenderer.setColor(1,1,0,1);
-		shapeRenderer.rect(infEsqX, infEsqY + altRet, largRet, altRet);  //posição inferior direita
+		shapeRenderer.rect(-largRet, 0, largRet, altRet);
 		shapeRenderer.end();
 	}
 
